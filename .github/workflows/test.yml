@@ -1,0 +1,54 @@
+name: repoDownload
+
+env:
+  DESTINATION_PATH: "${{ github.workspace }}/output"
+  REPO_URL: https://github.com/aosp-mirror/platform_frameworks_base/archive/refs/heads/nougat-mr2-security-release.zip
+  LOG_TO_FILE: 2>&1 | tee -a nougat-mr2-security-release.txt
+
+on:
+  watch:
+    type: [started]
+
+jobs:
+  repoDownload:
+    name: repoDownload
+    runs-on: ubuntu-latest
+
+# msttcorefonts-installer fontconfig && update-ms-fonts
+    steps: 
+      - name: downloadRepo
+        run: |
+          mkdir ${{ env.DESTINATION_PATH }}
+          wget -O nougat-mr2-security-release.zip ${{ env.REPO_URL }} ${{ env.LOG_TO_FILE }}
+          tree
+          ls -l
+          mv nougat-mr2-security-release.zip nougat-mr2-security-release.txt ${{ env.DESTINATION_PATH}}
+
+      - name: Publish Release
+        id: release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: ${{ env.DESTINATION_PATH }}/*
+          artifactContentType: raw
+          body: |
+            link: https://github.com/aosp-mirror/platform_frameworks_base/archive/refs/heads/nougat-mr2-security-release.zip
+#          bodyFile: ""
+#          commit: ""
+          draft: false
+          generateReleaseNotes: false
+          makeLatest: "legacy"
+#          name: ""
+          omitBody: false
+          omitBodyDuringUpdate: false
+          omitDraftDuringUpdate: false
+          omitName: false
+          omitNameDuringUpdate: false
+#          owner: 
+          prerelease: false
+          removeArtifacts: false
+          replacesArtifacts: true
+          skipIfReleaseExists: false
+          tag: "aosp.frameworks.platform.base.nougat-mr2-security-release"
+
